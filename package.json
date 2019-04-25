@@ -1,0 +1,63 @@
+{
+  "name": "pristine-bot",
+  "version": "1.0.0",
+  "description": "A PR bot for github",
+  "author": "Devon T. Wesley <dwesley89@gmail.com>",
+  "license": "Apache",
+  "repository": "https://github.com//pristine-bot.git",
+  "homepage": "https://github.com//pristine-bot",
+  "bugs": "https://github.com//pristine-bot/issues",
+  "keywords": [
+    "probot",
+    "github",
+    "probot-app"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "build:test": "npm run build && npm run test",
+    "dev": "nodemon --exec \"npm start\"",
+    "example": "node build/example.js",
+    "lint": "standard **/*.ts --fix",
+    "restart": "npm run build && npm run dev",
+    "start": "node ./build/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch --notify --notifyMode=change --coverage"
+  },
+  "dependencies": {
+    "@types/fs-extra": "^7.0.0",
+    "@types/lodash": "^4.14.134",
+    "@types/nock": "^9.3.0",
+    "fs-extra": "^8.0.1",
+    "lodash": "^4.17.11",
+    "nock": "^10.0.0",
+    "probot": "^9.2.15",
+    "simple-git": "^1.115.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.0",
+    "@types/node": "^11.9.0",
+    "eslint-plugin-typescript": "^0.14.0",
+    "jest": "^24.0.0",
+    "nodemon": "^1.17.2",
+    "smee-client": "^1.0.2",
+    "standard": "^12.0.1",
+    "ts-jest": "^24.0.0",
+    "typescript": "^3.3.1",
+    "typescript-eslint-parser": "^22.0.0"
+  },
+  "engines": {
+    "node": ">= 8.3.0"
+  },
+  "standard": {
+    "parser": "typescript-eslint-parser",
+    "env": [
+      "jest"
+    ],
+    "plugins": [
+      "typescript"
+    ]
+  },
+  "jest": {
+    "testEnvironment": "node"
+  }
+}

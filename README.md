@@ -1,71 +1,103 @@
 # Pristine Bot 
 
-Pull request bot for [Pristine](https://github.com/etclabscore/pristine) updates 
+A Pull request bot.
 
-The Pristine bot will submit pull requests when Pristine gets updated.
+- Install Pristine-bot
+- Setup a repo that emits changes when updated.
+- Set a list of repos to listen for those changes.
 
-## How to configure Pristine Bot in your org:
+## Installation
 
-...
+```javascript
+npm install pristine-bot
+```
 
-## Whats the problem?:
+## Dependencies
 
-- The root Pristine project gets updated and as a developer you want to apply those changes to projects that use Pristine.
+- [git](https://git-scm.com/downloads) is required.
 
-- The problem is multiple projects might use pristine, so it would be cumbersome to have to update each repo manually.
+## Configure Pristine-bot:
 
-## Proposed solution:
+```javascript
+const pristineBot = require("pristine-bot")
 
-- Pristine Bot: There's a bunch of bots that submit pull request to repos, for lots of reasons, pristine bot will do the same whenever an update is submitted to the pristine project.
+const config = {
+  owner: "GITHUB_OWNER",
+  repoName: "TEMPLATE_REPO",
+  rootReposDir: __dirname,
+}
 
-- Steps:
+async function startBot() {
+  const bot = await PristineBot(config)
 
-1. Going to use [Probot](https://github.com/probot/probot) and [NodeGit](https://www.nodegit.org)
+  bot.on("error", async (error: any) => {
+    console.log("-- PR_ERROR --", error)
+  })
 
-2. Probot has a cli that you can use to scaffold a bot project.
+  bot.on("submitted", async (repo) => {
+    console.log("-- SINGLE_REPO_PR_SUBMITTED --", repo)
+  })
 
-3. Create a github app:
-    - have to get a `webhook_proxy_url` (This is for testing and exposing your localhost to the webhooks).
-    - Get `webhook secret` for security.
-    - Set persmissions.
-    - Download the private key and move it to your project's directory. As long as it's in the root of your project, Probot will find it automatically regardless of the filename.
-    - Edit .env and set APP_ID to the ID of the app you just created. The App ID can be found in your app settings page here 
+  bot.on("completed", async (repos) => {
+    console.log("-- ALL_REPO_PRS_SUBMITTED --", repos)
+  })
+}
 
-4. Hooks to listen for:
-  - we want to listen for a "push" event on pristines master branch. 
-    - The push event is going to give you a payload, contained with in this payload is:
-      - ref: `ref/heads/master`
-      - head: `COMMIT_AFTER_PUSH`
-      - plus more...
-    - Theres a number of different options here
-      - `git show HEAD`
-        - This will show us the changes.
-        - Then we do something with those changes. 
-      -  `git remote add pristine <PRISTINE_URL>`
-          - Pretty much do [this](https://thoughts.t37.net/merging-2-different-git-repositories-without-losing-your-history-de7a06bba804) flow, but just applying the lastest changes.
-    - List all repos in an org and apply changes, we can blacklist the ones we don't want pristine to use. 
+startBot()
+```
 
-I think we can make changes to repos, without adding persistence, yet.
+### Configuration options:
 
-Continue spec here `...`
+| Option  | Description |
+| ------- | :---------: |
+| owner   | The name of the account owner or org. (*required*) |
+| repoName | The template to emit changes. (*required*) |
+| rootReposDir | A root dir to clone repos to. example: "/ROOT/tmp/repos". (*required*)
+| defaultRemote | Remote name to set for remote template url. (*optional*)
+| defaultBranchName | Name of the branch where changes will be implemented: *feat/pristine-changes*. (*optional*)
+| defaultPRTitle | The title of the Pull Request, default: *Pristine changes*. (*optional*)
+| defaultConflictCommitMessage | The commit message for merge conflicts, default: *fix: Pristine changes with conflicts*. (*optional*)
+| defaultPRBody | The contents of the Pull Request, default: N/A. (*optional*)
 
-#### Resources
+## Pristine-bot is powered by [Probot](https://probot.github.io):
 
-- [opensource.guide](https://opensource.guide/)
-- [Github community profiles for public repositories](https://help.github.com/articles/about-community-profiles-for-public-repositories/)
-- [Readme Driven Development](http://tom.preston-werner.com/2010/08/23/readme-driven-development.html)
-- [pengwynn/flint](https://github.com/pengwynn/flint)
-- [Working Backwards](https://www.allthingsdistributed.com/2006/11/working_backwards.html)
-- [Literate programming](https://en.wikipedia.org/wiki/Literate_programming)
-- [Hammock Driven Development](https://www.youtube.com/watch?v=f84n5oFoZBc)
-- [Inversion and The Power of Avoiding Stupidity](https://fs.blog/2013/10/inversion/)
-- [choosealicense.com](http://choosealicense.com)
+To run your app in development, you will need to configure a GitHub App to deliver webhooks to your local machine.
 
-## Getting Started
+1. On your local machine, copy .env.example to .env.
 
-To get started, [fork](https://help.github.com/articles/fork-a-repo/) or [duplicate](https://help.github.com/articles/duplicating-a-repository/) the repository. Then edit this file and delete everything above this line.
+Example:
 
----
+```bash
+APP_ID=0111
+PRIVATE_KEY="PRIVATE"
+WEBHOOK_SECRET="SECRET"
+WEBHOOK_PROXY_URL=https://smee.io/SMEE_ID
+```
+
+2. Go to smee.io and click Start a new channel. Set WEBHOOK_PROXY_URL in .env to the URL that you are redirected to.
+
+3. Create a new GitHub App with:
+
+- Webhook URL: Use your WEBHOOK_PROXY_URL from the previous step.
+
+- Webhook Secret: development (Note: For optimal security, Probot apps require this secret be set, even though it's optional on GitHub.).
+
+- Permissions & events is located lower down the page and will depend on what data you want your app to have access to. Note: if, for example, you only enable issue events, you will not be able to listen on pull request webhooks with your app. However, for development we recommend enabling everything.
+
+4. Download the private key and move it to your project's directory. As long as it's in the root of your project, Probot will find it automatically regardless of the filename.
+
+5. Edit .env and set APP_ID to the ID of the app you just created. The App ID can be found in your app settings page here 
+
+Probot [docs.](https://probot.github.io/docs/development/)
+
+## Select listening repos:
+
+- Go to org or repo settings and click installed github apps.
+
+<img src="./assets/repo-access.png" height="375">
+
+## Deployment:
+- Pristine-bot for production: [link](https://probot.github.io/docs/deployment/)
 
 ### Contributing
 
