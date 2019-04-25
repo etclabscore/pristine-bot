@@ -43,9 +43,9 @@ The Pristine bot will submit pull requests when Pristine gets updated.
         - Then we do something with those changes. 
       -  `git remote add pristine <PRISTINE_URL>`
           - Pretty much do [this](https://thoughts.t37.net/merging-2-different-git-repositories-without-losing-your-history-de7a06bba804) flow, but just applying the lastest changes.
-    - List all repos in an org and apply changes, we can blacklist the ones we don't want pristine to use. 
+    - List all repos in an org and apply changes, we can blacklist the ones that don't use pristine, if thats the case. 
 
-I think we can make changes to repos, without adding persistence, yet.
+I think we can make changes to repos, without adding persistence to the bot, yet.
 
 Continue spec here `...`
 
