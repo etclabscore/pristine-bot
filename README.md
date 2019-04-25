@@ -1,31 +1,38 @@
-# Pristine
+# Pristine Bot 
 
-Pristine is an open source repository in its original condition.
+Pull request bot for [Pristine](https://github.com/etclabscore/pristine) updates 
 
-There are a lack of repositories to start from to build community driven open source projects. Pristine is a starting point, it follows a Documentation Driven Development approach, and can be used as a resource to augment existing documentation.
+The Pristine bot will submit pull requests when Pristine gets updated.
 
-## How to use Pristine in your project
+## How to configure Pristine Bot in your org:
 
-There are 2 options for using pristine with your project. 
-1. Fork this repo as the start of your own, OR
-2. [follow these instructions](https://thoughts.t37.net/merging-2-different-git-repositories-without-losing-your-history-de7a06bba804) to use it on an existing repository.
 
-## Documentation Driven Development
+## Whats the problem?:
 
-There are many ways to drive open source development. Documenting the problem in the README gives a middle ground between technical and non-technical specifications. This allows organizing solutions to this challenge around community and documentation.
+- The root Pristine project gets updated and as a developer you want to apply those changes to projects that use Pristine.
 
-> [...] a beautifully crafted library with no documentation is also damn near worthless. If your software solves the wrong problem or nobody can figure out how to use it, there’s something very bad going on.
+- The problem is multiple projects use pristine, so it would be cumbersome to have to do this manually.
 
-- [Readme Driven Development](http://tom.preston-werner.com/2010/08/23/readme-driven-development.html) by Tom Preson-Werner
+## Proposed solution:
 
-### Conventions and Specifications 
+- Pristine Bot: There's a bunch of bots that submit pull request to repos, for lots of reasons, pristine bot will do the same whenever an update is submitted to the pristine project.
 
-Using conventions, documentation and specifications make it easier to:
-- communicate the problem you are solving
-- ease onboarding
-- build and use composable tools
-- promote open source contribution and engagement
-- promote issue and feature discussion on Github itself
+- Steps:
+
+1. Going to use [Probot](https://github.com/probot/probot).
+
+2. Probot has a cli that you can use to scaffold a bot project.
+
+3. Create a github app:
+    - have to get a `webhook_proxy_url` (This is for testing and exposing your localhost to the webhooks).
+    - Get `webhook secret` for security.
+    - Set persmissions.
+    - Download the private key and move it to your project's directory. As long as it's in the root of your project, Probot will find it automatically regardless of the filename.
+    - Edit .env and set APP_ID to the ID of the app you just created. The App ID can be found in your app settings page here 
+
+4. Hooks listen for 
+
+
 
 #### Resources
 
