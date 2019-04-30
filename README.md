@@ -20,7 +20,7 @@ The Pristine bot will submit pull requests when Pristine gets updated.
 
 - Steps:
 
-1. Going to use [Probot](https://github.com/probot/probot) and [NodeGit](https://www.nodegit.org)
+1. Going to use [Probot](https://github.com/probot/probot)
 
 2. Probot has a cli that you can use to scaffold a bot project.
 
@@ -33,7 +33,7 @@ The Pristine bot will submit pull requests when Pristine gets updated.
 
 4. Hooks to listen for:
   - we want to listen for a "push" event on pristines master branch. 
-    - The push event is going to give you a payload, contained with in this payload is:
+    - The push event is going to give you a payload, contained within this payload is:
       - ref: `ref/heads/master`
       - head: `COMMIT_AFTER_PUSH`
       - plus more...
