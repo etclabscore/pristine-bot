@@ -1,11 +1,10 @@
 import { Application } from "probot" // eslint-disable-line no-unused-vars
-const { Clone } = require("nodegit") // eslint-disable-line no-unused-vars
+const { Clone, Remote } = require("nodegit") // eslint-disable-line no-unused-vars
 
 const ORG = "Oakland-Blockchain-Developers" // TODO: change to OPEN_RPC org.
 const HEAD_REPO = "testing_repo" // TODO: change to Pristine
-const HEAD_REMOTE = `https://github.com/${ORG}/${HEAD_REPO}.git`
-
-console.log("HEAD_REMOTE :: ==>", HEAD_REMOTE)
+const HEAD_REMOTE_URL = `https://github.com/${ORG}/${HEAD_REPO}.git`
+const HEAD_REMOTE_ORIGIN = "test"
 
 export = (app: Application) => {
   app.on("push", async (context) => {
@@ -25,15 +24,20 @@ export = (app: Application) => {
         }
       ])
       
-      const clones = data.map((repo: any) => {
+      data.map((repo: any) => {
         return Clone(repo.clone_url, `tmp/repos/${repo.name}`)
           .then((clone: any) => {
-            console.log("SINGLE_CLONE :: ==>", clone)
-            return clone;
+            Remote.setUrl(
+              clone,
+              HEAD_REMOTE_ORIGIN,
+              HEAD_REMOTE_URL
+            )
+
+            const fetchResult = Promise.resolve(clone.fetchAll())
+
+            return { clone, fetchResult }
           })
       })
-
-      console.log("CLONES :: ==>", clones)
     }
   })
 }
