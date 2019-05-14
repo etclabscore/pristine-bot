@@ -14,7 +14,6 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "build:watch": "tsc -pw tsconfig.json",
     "restart": "npm run build && npm run dev",
     "dev": "nodemon --exec \"npm start\"",
     "start": "probot run ./lib/index.js",
