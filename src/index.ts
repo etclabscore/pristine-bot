@@ -1,8 +1,8 @@
 import { Application } from "probot" // eslint-disable-line no-unused-vars
-// const nodegit = require("nodegit") // eslint-disable-line no-unused-vars
+const { Clone } = require("nodegit") // eslint-disable-line no-unused-vars
 
-const ORG = "Oakland-Blockchain-Developers"
-const HEAD_REPO = "testing_repo"
+const ORG = "Oakland-Blockchain-Developers" // TODO: change to OPEN_RPC org.
+const HEAD_REPO = "testing_repo" // TODO: change to Pristine
 const HEAD_REMOTE = `https://github.com/${ORG}/${HEAD_REPO}.git`
 
 console.log("HEAD_REMOTE :: ==>", HEAD_REMOTE)
@@ -19,13 +19,30 @@ export = (app: Application) => {
     )
 
     if (isHeadPepo) {
-      const { data } = await repos.listForOrg(
+      const { data } = await genericAsyncFunction(repos.listForOrg,[
         { 
-          org: ORG
+          org: ORG 
         }
-      )
+      ])
       
-      console.log("LIST :: ==>", data)
+      const clones = data.map((repo: any) => {
+        return Clone(repo.clone_url, `tmp/repos/${repo.name}`)
+          .then((clone: any) => {
+            console.log("SINGLE_CLONE :: ==>", clone)
+            return clone;
+          })
+      })
+
+      console.log("CLONES :: ==>", clones)
     }
   })
+}
+
+async function genericAsyncFunction(func: any, args: any) {
+  try {
+    const result = await func(...args)
+    return result
+  } catch (error) {
+    console.error(`ERROR: ${error.message}`)
+  }
 }
