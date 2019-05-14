@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "A PR bot for github",
   "author": "Devon T. Wesley <dwesley89@gmail.com>",
-  "license": "ISC",
+  "license": "Apache",
   "repository": "https://github.com//pristine-bot.git",
   "homepage": "https://github.com//pristine-bot",
   "bugs": "https://github.com//pristine-bot/issues",
@@ -14,6 +14,8 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "build:watch": "tsc -pw tsconfig.json",
+    "restart": "npm run build && npm run dev",
     "dev": "nodemon --exec \"npm start\"",
     "start": "probot run ./lib/index.js",
     "lint": "standard **/*.ts --fix",
