@@ -1,8 +1,7 @@
 import { Application } from "probot" // eslint-disable-line no-unused-vars
+import MasterRepo from "./publish_repo"
 
-const ORG = "Oakland-Blockchain-Developers" // TODO: change to OPEN_RPC org.
-const HEAD_REPO = "testing_repo" // TODO: change to Pristine
-const HEAD_PULL_BRANCH = 'feat/pristine_changes'
+const HEAD_REPO = "Pristine" // Abstract
 
 export = (app: Application) => {
   app.on("push", async (context) => {
@@ -11,16 +10,28 @@ export = (app: Application) => {
       payload: { repository, ref, head_commit, after }
     } = context
 
-    const isHeadPepo = (
+    const isPublishRepo = (
       repository.name === HEAD_REPO && ref === "refs/heads/master"
     )
 
-    if (isHeadPepo) {
-      const MASTER_REF = `refs/heads/${HEAD_PULL_BRANCH}_${after.substring(0, 7)}`
+    if (isPublishRepo)  {
+      const masterRepo = new MasterRepo({
+        owner: "Oakland-Blockchain-Developers",
+        repo: "Pristine",
+        gitAPI: context.github,
+        payload: context.payload,
+        headPullBranch: 'feat/pristine_changes'
+      })
+
+      const ORG = masterRepo.getOwner()
+      const MASTER_REF = masterRepo.createNewRefText(
+        masterRepo.getHeadPullBranch(), 
+        after.substring(0, 7)
+      )
 
       const { data } = await genericAsyncFunction(repos.listForOrg, [
         { 
-          org: ORG 
+          org: ORG
         }
       ] /**, console.log*/)
 
@@ -40,6 +51,8 @@ export = (app: Application) => {
 
         // this gets you file sha
         const contents = head_commit.modified.map(async (path: string) => {
+          
+          // TODO: moving to publish_repo.ts
           const oldContent = await genericAsyncFunction(repos.getContents, [{
             owner: ORG,
             repo: repo.name,
