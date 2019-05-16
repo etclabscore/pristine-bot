@@ -2,13 +2,13 @@ import { Application } from "probot" // eslint-disable-line no-unused-vars
 
 const ORG = "Oakland-Blockchain-Developers" // TODO: change to OPEN_RPC org.
 const HEAD_REPO = "testing_repo" // TODO: change to Pristine
-const HEAD_PULL_BRANCH = 'feat/new_pristine_changes'
+const HEAD_PULL_BRANCH = 'feat/pristine_changes'
 
 export = (app: Application) => {
   app.on("push", async (context) => {
     const { 
-      github: { repos, gitdata, pullRequests},
-      payload: { repository, ref, head_commit }
+      github: { repos, gitdata, pullRequests },
+      payload: { repository, ref, head_commit, after }
     } = context
 
     const isHeadPepo = (
@@ -16,6 +16,8 @@ export = (app: Application) => {
     )
 
     if (isHeadPepo) {
+      const MASTER_REF = `refs/heads/${HEAD_PULL_BRANCH}_${after.substring(0, 7)}`
+
       const { data } = await genericAsyncFunction(repos.listForOrg, [
         { 
           org: ORG 
@@ -29,22 +31,12 @@ export = (app: Application) => {
           ref: "refs/heads/master"
         }] /**, console.log*/)
 
-        const refExists = await genericAsyncFunction(repos.getCommitRefSha, [{
+        await genericAsyncFunction(gitdata.createRef, [{
           owner: ORG,
           repo: repo.name,
-          ref: `heads/${HEAD_PULL_BRANCH}`
+          ref: MASTER_REF,
+          sha
         }] /**, console.log*/)
-
-        console.log('REF_EXISTS :: =>', refExists)
-
-        if(!refExists) {
-          await genericAsyncFunction(gitdata.createRef, [{
-            owner: ORG,
-            repo: repo.name,
-            ref: `refs/heads/${HEAD_PULL_BRANCH}`,
-            sha
-          }] /**, console.log*/)
-        }
 
         // this gets you file sha
         const contents = head_commit.modified.map(async (path: string) => {
@@ -53,8 +45,6 @@ export = (app: Application) => {
             repo: repo.name,
             path
           }] /**, console.log*/)
-
-          console.log("OLD_CONTENTS :: ==>", oldContent)
 
           const { data: { content } } = await genericAsyncFunction(repos.getContents, [{
             owner: ORG,
@@ -91,7 +81,7 @@ export = (app: Application) => {
               message: "feat: new pristine changes",
               content: file.data.updatedContents,
               sha: file.data.sha,
-              branch: `refs/heads/${HEAD_PULL_BRANCH}`
+              branch: MASTER_REF
             }] /**, console.log*/)
           } else {
             console.log("CREATE !!!");
@@ -101,7 +91,7 @@ export = (app: Application) => {
               path: file.data.name,
               message: "feat: new pristine changes",
               content: file.data.updatedContents,
-              branch: `refs/heads/${HEAD_PULL_BRANCH}`
+              branch: MASTER_REF
             }] /**, console.log*/)
           }
         })
@@ -110,7 +100,7 @@ export = (app: Application) => {
           owner: ORG,
           repo: repo.name,
           title: "Pristine has been updated!",
-          head: `refs/heads/${HEAD_PULL_BRANCH}`,
+          head: MASTER_REF,
           base: "refs/heads/master"
         }] /**, console.log*/)
       })
