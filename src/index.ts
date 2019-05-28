@@ -16,11 +16,17 @@ export = (app: Application) => {
     )
 
     if (isPublishRepo)  {
+      const masterChanges = [ ...head_commit.added, ...head_commit.modified ]
+
+      const latestChanges = await getBatchedChanges(masterChanges, repos.getContents)
+
       const reposList = await genericAsyncFunction(repos.listForOrg, [
         { 
           org: ORG
         }
       ] /**, console.log*/)
+
+      console.log("REPOSLIST :: ==>", reposList)
 
       const repoNames = reposList.data.map(async (repo: any) => {
         const oldCommit = await genericAsyncFunction(repos.getCommitRefSha, [{
@@ -38,37 +44,12 @@ export = (app: Application) => {
           sha: oldCommit.data.sha
         }] /**, console.log*/)
 
-        const filesToCommit: any = head_commit.modified.map(async (path: string) => {
-          const { data: { content } } = await genericAsyncFunction(repos.getContents, [{
-            owner: ORG,
-            repo: HEAD_REPO,
-            path,
-            ref: "refs/heads/master"
-          }] /**, console.log*/)
-
-          const buff = Buffer.from(content, 'base64');  
-          const text = buff.toString();
-
-          const blob = await genericAsyncFunction(gitdata.createBlob, [{ 
-            owner: ORG,
-            repo: repo.name,
-            content: text
-          }])
-
-          return {
-            sha: blob.data.sha,
-            path,
-            mode: '100644',
-            type: 'blob'
-          }
-        })
-
-        const fileBlobs = await Promise.all(filesToCommit)
+        const filesToCommit = await createBlob(latestChanges, gitdata.createBlob, repo.name)
 
         const newTree = await genericAsyncFunction(gitdata.createTree, [{ 
           owner: ORG,
           repo:  repo.name,
-          tree: fileBlobs,
+          tree: filesToCommit,
           base_tree: oldCommit.data.commit.tree.sha
         }])
 
@@ -97,17 +78,62 @@ export = (app: Application) => {
 
       const names = await Promise.all(repoNames)
 
-      names.forEach((name: any) => {
-        genericAsyncFunction(pullRequests.create, [{
-          owner: ORG,
-          repo: name,
-          title: "Pristine has been updated!",
-          head: BRANCH_REF,
-          base: "refs/heads/master"
-        }] /**, console.log*/)
-      });
+      submitBatchPR(names, pullRequests.create)
     }
   })
+}
+
+async function createBlob(latestChanges: any, createBlob: any, name: string) {
+  return await Promise.all(latestChanges.map(async (changes: any) => {
+    const blob = await genericAsyncFunction(createBlob, [{ 
+      owner: ORG,
+      repo: name,
+      content: changes.content
+    }])
+
+    return {
+      sha: blob.data.sha,
+      path: changes.path,
+      mode: '100644',
+      type: 'blob'
+    }
+  }))
+}
+
+async function submitBatchPR(names: any, create: any) {
+  return await Promise.all(names.forEach((name: any) => {
+    return submitPR(name, create)
+  }));
+}
+
+function submitPR(name: string, create: any) {
+  genericAsyncFunction(create, [{
+    owner: ORG,
+    repo: name,
+    title: "Pristine has been updated!",
+    head: BRANCH_REF,
+    base: "refs/heads/master"
+  }] /**, console.log*/)
+}
+
+async function getBatchedChanges(masterChanges: any, getContents: any ) {
+  return await Promise.all(masterChanges.map((path: any) => {
+    return getPushedChange(getContents, path)
+  }))
+}
+
+async function getPushedChange(getContents: any, path: string) {
+  const { data: { content } } = await genericAsyncFunction(getContents, [{
+    owner: ORG,
+    repo: HEAD_REPO,
+    path,
+    ref: "refs/heads/master"
+  }] /**, console.log*/)
+
+  const buff = Buffer.from(content, 'base64')
+  const text = buff.toString("utf8")
+
+  return { content: text, path }
 }
 
 async function genericAsyncFunction(func: any, args: any /**, logger: any*/) {
