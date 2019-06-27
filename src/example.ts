@@ -1,9 +1,10 @@
 import PristineBot, { Repo } from "./"
 
 const config = {
-  owner: "Oakland-Blockchain-Developers",
+  owner: "etccorelabs",
   repoName: "Pristine",
   rootReposDir: __dirname,
+  listeningRepos: []
 }
 
 async function startBot() {
