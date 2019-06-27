@@ -29,11 +29,9 @@ const config = {
 
 async function startBot() {
   const bot = await PristineBot(config)
-
   bot.on("error", async (error: any) => {
     console.log("-- PR_ERROR --", error)
   })
-
   bot.on("submitted", async (repo) => {
     console.log("-- SINGLE_REPO_PR_SUBMITTED --", repo)
   })
