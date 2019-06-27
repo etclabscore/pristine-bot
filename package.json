@@ -14,23 +14,28 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "restart": "npm run build && npm run dev",
+    "build:test": "npm run build && npm run test",
     "dev": "nodemon --exec \"npm start\"",
-    "start": "probot run ./build/index.js",
+    "example": "node build/example.js",
     "lint": "standard **/*.ts --fix",
-    "test": "jest && standard **/*.ts",
+    "restart": "npm run build && npm run dev",
+    "start": "node ./build/index.js",
+    "test": "jest",
     "test:watch": "jest --watch --notify --notifyMode=change --coverage"
   },
   "dependencies": {
+    "@types/fs-extra": "^7.0.0",
+    "@types/lodash": "^4.14.134",
     "@types/nock": "^9.3.0",
+    "fs-extra": "^8.0.1",
+    "lodash": "^4.17.11",
     "nock": "^10.0.0",
-    "nodegit": "^0.24.3",
-    "probot": "^7.2.0"
+    "probot": "^9.2.15",
+    "simple-git": "^1.115.0"
   },
   "devDependencies": {
     "@types/jest": "^24.0.0",
     "@types/node": "^11.9.0",
-    "@types/nodegit": "^0.24.6",
     "eslint-plugin-typescript": "^0.14.0",
     "jest": "^24.0.0",
     "nodemon": "^1.17.2",

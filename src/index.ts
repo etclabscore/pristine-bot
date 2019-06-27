@@ -1,120 +1,14 @@
-import { Application } from "probot" // eslint-disable-line no-unused-vars
+import { Probot } from "probot"
+import Repo, { IRepoOptions, IPROptions } from "./repo"
+import PristineBot from "./bot"
+import { IBotConfig, IRepo } from "./default-config"
+import * as BotHelpers from "./helpers"
 
-const ORG = "Oakland-Blockchain-Developers" // TODO: change to OPEN_RPC org.
-const HEAD_REPO = "testing_repo" // TODO: change to Pristine
-const HEAD_PULL_BRANCH = 'feat/pristine_changes'
 
-export = (app: Application) => {
-  app.on("push", async (context) => {
-    const { 
-      github: { repos, gitdata, pullRequests },
-      payload: { repository, ref, head_commit, after }
-    } = context
-
-    const isHeadPepo = (
-      repository.name === HEAD_REPO && ref === "refs/heads/master"
-    )
-
-    if (isHeadPepo) {
-      const MASTER_REF = `refs/heads/${HEAD_PULL_BRANCH}_${after.substring(0, 7)}`
-
-      const { data } = await genericAsyncFunction(repos.listForOrg, [
-        { 
-          org: ORG 
-        }
-      ] /**, console.log*/)
-
-      data.forEach(async (repo: any) => {
-        const { data: { sha } } = await genericAsyncFunction(repos.getCommitRefSha, [{
-          owner: ORG,
-          repo: repo.name,
-          ref: "refs/heads/master"
-        }] /**, console.log*/)
-
-        await genericAsyncFunction(gitdata.createRef, [{
-          owner: ORG,
-          repo: repo.name,
-          ref: MASTER_REF,
-          sha
-        }] /**, console.log*/)
-
-        // this gets you file sha
-        const contents = head_commit.modified.map(async (path: string) => {
-          const oldContent = await genericAsyncFunction(repos.getContents, [{
-            owner: ORG,
-            repo: repo.name,
-            path
-          }] /**, console.log*/)
-
-          const { data: { content } } = await genericAsyncFunction(repos.getContents, [{
-            owner: ORG,
-            repo: HEAD_REPO,
-            path
-          }] /**, console.log*/)
-
-          if (oldContent) {  
-            oldContent.data.updatedContents = content
-            oldContent.fileExists = true
-            return oldContent
-          } else {
-            return new Promise((resolve) => {
-              resolve({ 
-                fileExists: false, 
-                data: { updatedContents: content, name: path } 
-              })
-            })
-          }
-        })
-
-        const result = await Promise.all(contents)
-
-        result.forEach((file: any) => {
-          console.log("FILE :: ==>", file)
-
-          if(file.fileExists) {
-            console.log("UPDATE !!!");
-            console.log("FILE :: ++>", file)
-            genericAsyncFunction(repos.updateFile, [{
-              owner: ORG,
-              repo: repo.name,
-              path: file.data.name,
-              message: "feat: new pristine changes",
-              content: file.data.updatedContents,
-              sha: file.data.sha,
-              branch: MASTER_REF
-            }] /**, console.log*/)
-          } else {
-            console.log("CREATE !!!");
-            genericAsyncFunction(repos.createFile, [{
-              owner: ORG,
-              repo: repo.name,
-              path: file.data.name,
-              message: "feat: new pristine changes",
-              content: file.data.updatedContents,
-              branch: MASTER_REF
-            }] /**, console.log*/)
-          }
-        })
-
-        await genericAsyncFunction(pullRequests.create, [{
-          owner: ORG,
-          repo: repo.name,
-          title: "Pristine has been updated!",
-          head: MASTER_REF,
-          base: "refs/heads/master"
-        }] /**, console.log*/)
-      })
-    }
-  })
+export default async function boostrap(config: any): Promise<any> {
+  const pristine = new PristineBot(config)
+  await Probot.run(pristine.start)
+  return pristine
 }
 
-async function genericAsyncFunction(func: any, args: any /**, logger: any*/) {
-  // if(logger) logger(`Method: ${func.name}\n${JSON.stringify(args)}`)
-
-  try {
-    const result = await func(...args)
-    return result
-  } catch (error) {
-    console.error(`ERROR: ${JSON.stringify(error.message, null, 4)}`)
-  }
-}
+export { Repo, IBotConfig, IRepo, BotHelpers, IRepoOptions, IPROptions }
