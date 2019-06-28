@@ -19,43 +19,68 @@ npm install pristine-bot
 ## Configure Pristine-bot:
 
 ```javascript
-const pristineBot = require("pristine-bot")
+import PristineBot from "pristine-bot"
 
-const config = {
-  owner: "GITHUB_OWNER",
-  repoName: "TEMPLATE_REPO",
-  rootReposDir: __dirname,
+const config = { 
+  owner: "etccorelabs",
+  workingDir: __dirname,
+  templateConfigs: [
+    {
+      template: "pristine",
+      listeningRepos: [
+        "testing_repo_1", 
+        "testing_repo_2"
+      ]
+    }, 
+    {
+      template: "pristine-typescript",
+      listeningRepos: [ 
+        "testing_repo_3" 
+      ]
+    }
+  ]
 }
 
 async function startBot() {
-  const bot = await PristineBot(config)
-  bot.on("error", async (error: any) => {
-    console.log("-- PR_ERROR --", error)
-  })
-  bot.on("submitted", async (repo) => {
-    console.log("-- SINGLE_REPO_PR_SUBMITTED --", repo)
-  })
+  const bots = await PristineBot(config)
 
-  bot.on("completed", async (repos) => {
-    console.log("-- ALL_REPO_PRS_SUBMITTED --", repos)
+  bots.map((bot) => {    
+    bot.on("error", async (error) => {
+      console.log("-- REPO_PR_ERROR --", error)
+    })
+  
+    bot.on("submitted", async (repo) => {
+      console.log("-- REPO_PR_SUBMITTED --", repo)
+    })
+  
+    bot.on("completed", async (repos) => {
+      console.log("-- ALL_REPO_PRS_SUBMITTED --", repos)
+    })
   })
 }
 
 startBot()
 ```
 
-### Configuration options:
+## Configuration options:
 
 | Option  | Description |
 | ------- | :---------: |
 | owner   | The name of the account owner or org. (*required*) |
-| repoName | The template to emit changes. (*required*) |
-| rootReposDir | A root dir to clone repos to. example: "/ROOT/tmp/repos". (*required*)
-| defaultRemote | Remote name to set for remote template url. (*optional*)
-| defaultBranchName | Name of the branch where changes will be implemented: *feat/pristine-changes*. (*optional*)
-| defaultPRTitle | The title of the Pull Request, default: *Pristine changes*. (*optional*)
-| defaultConflictCommitMessage | The commit message for merge conflicts, default: *fix: Pristine changes with conflicts*. (*optional*)
-| defaultPRBody | The contents of the Pull Request, default: N/A. (*optional*)
+| workingDir | A root dir to clone repos to. example: "/ROOT/tmp/repos". (*required*) |
+| templateConfigs[] | An array of template configs. (*required*) |
+
+#### Template Config
+
+| Option  | Description |
+| ------- | :---------: |
+| template | The name of the template repo (*required*) |
+| listeningRepos | Repos subscribed to template changes (*required*) |
+| defaultRemote | Remote name to set for remote template url. (*optional*) |
+| defaultBranchName | Name of the branch where changes will be implemented: *feat/pristine-changes*. (*optional*) |
+| defaultPRTitle | The title of the Pull Request, default: *Pristine changes*. (*optional*) |
+| defaultConflictCommitMessage | The commit message for merge conflicts, default: *fix: Pristine changes with conflicts*. (*optional*) |
+| defaultPRBody | The contents of the Pull Request, default: N/A. (*optional*) |
 
 ## Pristine-bot is powered by [Probot](https://probot.github.io):
 
@@ -88,7 +113,7 @@ WEBHOOK_PROXY_URL=https://smee.io/SMEE_ID
 
 Probot [docs.](https://probot.github.io/docs/development/)
 
-## Select listening repos:
+## Give PristineBot access to all repos listed in config:
 
 - Go to org or repo settings and click installed github apps.
 
