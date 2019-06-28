@@ -14,6 +14,7 @@ export interface IBotConfig extends IRepo {
   reposRootDir: string
   templateRepoPath: string
   remoteRepoUrl: string
+  listeningRepos: string[]
 }
 
 export const defaultConfig = {

@@ -197,13 +197,15 @@ export default class Bot {
     app.on("push", async (context: Context) => {
       util.log(`--- EVENT_HAS_BEEN_RECIEVED ---`);
       const { github, payload: { repository: { name }, ref } } = context
-      const { repoName } = this.config.get()
+      const { repoName, listeningRepos } = this.config.get()
       if (!isTemplateRepo(name, repoName, ref)) return
       const template = await this.updateTemplateRepo(github)
       const reposList = await this.getOwnerRepos(github)
 
       const repos = await Promise.all(reposList.map(async (repo: Repo) => {
+        // Have to change this up because its returning undefined to the repo array
         if(repo.getRepoName() === name) return
+        if(!listeningRepos.includes(repo.getRepoName())) return
         return this.mergeTemplateCommits(repo)
       }))
 
