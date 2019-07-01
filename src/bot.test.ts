@@ -4,7 +4,7 @@ import Bot from "./bot"
 import Config from "./default-config";
 import { defaultConfig } from "./fixture"
 
-describe("#Bot", () => {
+describe.skip("#Bot", () => {
   let bot: Bot
   beforeAll(() => {
     bot = new Bot(defaultConfig)

@@ -1,7 +1,7 @@
 import { ensureDirSync } from "fs-extra"
 import { IRepoOptions } from "./repo"
 import { assign } from "lodash"
-import { IBotConfig } from ".";
+import { IBotConfig } from "./default-config";
 
 export function isTemplateRepo(eventRepo: string, templateRepo: string, eventRef: string): boolean {
   return eventRepo === templateRepo && eventRef === "refs/heads/master"

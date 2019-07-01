@@ -73,7 +73,7 @@ export default class Repo {
   }
 
   public async pull(): Promise<any> {
-    return this.localGit.pull()
+    return await this.localGit.pull()
   }
 
   public async merge(mergeArgs: string[]):Promise<any> {

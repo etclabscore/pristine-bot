@@ -1,9 +1,8 @@
 import { Probot } from "probot"
 import dotenv from "dotenv"
-import Repo, { IRepoOptions, IPROptions } from "./repo"
+import Repo from "./repo"
 import Bot from "./bot"
-import { IBotConfig, IRepo } from "./default-config"
-import * as BotHelpers from "./helpers"
+import { IBotConfig } from "./default-config"
 
 function configureBots(configs: any) {
   return configs.templateConfigs.map((config: any) => {
@@ -39,4 +38,4 @@ export default async function boostrap(config: any): Promise<any> {
   return botInstances
 }
 
-export { Repo, Bot, IBotConfig, IRepo, BotHelpers, IRepoOptions, IPROptions }
+export { Repo }

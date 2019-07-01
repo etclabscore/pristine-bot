@@ -202,13 +202,14 @@ export default class Bot {
       const template = await this.updateTemplateRepo(github)
       const reposList = await this.getOwnerRepos(github)
 
-      const repos = await Promise.all(reposList.map(async (repo: Repo) => {
-        // Have to change this up because its returning undefined to the repo array
-        if(repo.getRepoName() === name) return
-        if(!listeningRepos.includes(repo.getRepoName())) return
+      const mergeStrategy = reposList.filter((repo: Repo) => {
+        const currentName = repo.getRepoName()
+        return currentName !== name || listeningRepos.includes(currentName)
+      }).map(async (repo: Repo) => {
         return this.mergeTemplateCommits(repo)
-      }))
+      })
 
+      const repos = await Promise.all(mergeStrategy)
       await this.events.emit("completed", { template, repos })
     })
   }  

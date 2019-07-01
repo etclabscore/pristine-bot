@@ -1,22 +1,23 @@
 import PristineBot, { Repo } from "./"
 
 const config = { 
-  owner: "etccorelabs",
+  owner: "Oakland-Blockhain-Developers",
   workingDir: __dirname,
   templateConfigs: [
     {
-      template: "pristine",
+      template: "Pristine",
       listeningRepos: [
         "testing_repo_1", 
         "testing_repo_2"
       ]
-    }, 
-    {
-      template: "pristine-typescript",
-      listeningRepos: [ 
-        "testing_repo_3" 
-      ]
     }
+    // },
+    // {
+    //   template: "pristine-typescript",
+    //   listeningRepos: [ 
+    //     "testing_repo_3" 
+    //   ]
+    // }
   ]
 }
 

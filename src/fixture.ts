@@ -1,11 +1,37 @@
-import { defaultConfig } from "./default-config"
+import child from "child_process";
+import { promisify } from "util"
+import { mkdirp, writeFile } from "fs-extra";
+import { defaultConfig, IBotConfig } from "./default-config"
+import Repo from "./repo";
+import { Octokit } from "probot";
+import { createTemplateOptions } from "./helpers";
 
-defaultConfig.owner = "Oakland-Blockchain-Developers" // TODO: change to etclabs.
-defaultConfig.repoName = "testing_repo_3"
-defaultConfig.reposRootDir = __dirname
-defaultConfig.templateRepoPath = "path-to-template"
+const spawn = promisify(child.spawn)
 
-const pullRequestFixture = {
+export const mockRemoteRepo = async () => {
+  const mockRemotePath = `${__dirname}/mock-remote-repo`
+  await mkdirp(mockRemotePath)
+  await spawn("git", ["init"], { cwd: mockRemotePath })
+  await writeFile(`${mockRemotePath}/README.md`, "- Testing README\n")
+
+  return new Repo(createTemplateOptions({
+    owner: "etclabscore",
+    repoName: "mock-remote-repo",
+    reposRootDir: __dirname,
+    remoteRepoUrl: mockRemotePath,
+  } as IBotConfig), new Octokit)
+}
+
+export const mockLocalRepo = async (remoteRepoUrl: string) => {
+  return new Repo(createTemplateOptions({
+    owner: "etccorelabs",
+    repoName: "mock-local-repo",
+    reposRootDir: __dirname,
+    remoteRepoUrl: remoteRepoUrl
+  } as IBotConfig), new Octokit)
+}
+
+export const pullRequestFixture = {
   "id": 1,
   "number": 1347,
   "state": "open",
@@ -29,4 +55,4 @@ const pullRequestFixture = {
   "requested_reviewers": [],
 }
 
-export { pullRequestFixture, defaultConfig }
+export { defaultConfig }

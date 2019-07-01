@@ -5,7 +5,7 @@ import { defaultConfig } from "./default-config";
 const owner = "etclabscore"
 const repoName = "Pristine"
 
-describe("Helper Methods", () => {
+describe.skip("Helper Methods", () => {
   afterAll(() => {
     removeSync(`${__dirname}/tmp`)
   })
