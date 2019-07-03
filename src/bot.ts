@@ -194,6 +194,42 @@ export default class Bot {
   }
 
   public start = async (app: Application): Promise<void> => {
+    // Commands:
+    // - ./add-template - user types "./add-template", then pristine bot adds the template and account owner.
+    //    - account-owner - from github payload
+    //    - template-name - from github payload
+    // - ./add-template-list - from the template repo, comment this command and a list of repos - repo-name-1\n- repo-name-2\n- repo-name-3\n
+    //    - account-owner - from github payload
+    //    - ["repo-name-1", "repo-name-2", "repo-name-3"] - from user comment
+    // - ./add-to-template-list
+    //    - account-owner - from github payload
+    //    - template-name - from github payload
+    //    - repo-name - from user comment
+    // - ./remove-template
+    //    - account-owner - from github payload
+    //    - template-name - from github payload
+    // - ./remove-from-template-list
+    //    - account-owner - from github payload
+    //    - template-name - from github payload
+    //    - repo-name - from user comment
+
+
+    app.on("issue_comment.created", async (context: Context) => {
+      const { payload: { action, title, name, owner } } = context
+
+
+      if(action === "created") {
+        switch (title) {
+          case "add-template":
+            // db.saveTemplate(name, owner, [])
+            break;
+        
+          default:
+            break;
+        } 
+      }
+    })
+
     app.on("push", async (context: Context) => {
       util.log(`--- EVENT_HAS_BEEN_RECIEVED ---`);
       const { github, payload: { repository: { name }, ref } } = context
