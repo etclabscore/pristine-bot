@@ -37,6 +37,7 @@
     "lodash": "^4.17.11",
     "nock": "^10.0.0",
     "probot": "^9.2.15",
+    "probot-commands": "^1.1.0",
     "simple-git": "^1.115.0"
   },
   "devDependencies": {

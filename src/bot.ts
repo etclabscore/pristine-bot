@@ -2,17 +2,24 @@ import util from "util";
 import { EventEmitter } from "events";
 import { Application, Context, Octokit} from "probot"
 import { AppsListReposResponseRepositoriesItem } from "@octokit/rest";
+import DB from "./db"
 import Repo from "./repo"
 import Config, { IBotConfig } from "./default-config"
 import { isTemplateRepo, createOptions, createTemplateOptions } from "./helpers"
+import { isUnaryExpression } from "@babel/types";
+import { template } from "@babel/core";
+
+const slashCommands = require("probot-commands")
 
 export default class Bot {
   public config: Config
   public events: EventEmitter
+  private db: DB
   [key: string]: any
   constructor(config: IBotConfig) {
     this.events = new EventEmitter()
     this.config = new Config(config)
+    this.db = new DB()
   }
 
   public on(event: "error", callback: any): void
@@ -193,42 +200,77 @@ export default class Bot {
     return repo
   }
 
+  // Commands:
+  // - ./add-template - user types "./add-template", then pristine bot adds the template and account owner.
+  //    - account-owner - from github payload
+  //    - template-name - from github payload
+  // - ./add-template-list - from the template repo, comment this command and a list of repos - repo-name-1\n- repo-name-2\n- repo-name-3\n
+  //    - account-owner - from github payload
+  //    - ["repo-name-1", "repo-name-2", "repo-name-3"] - from user comment
+  // - ./add-to-template-list
+  //    - account-owner - from github payload
+  //    - template-name - from github payload
+  //    - repo-name - from user comment
+  // - ./remove-template
+  //    - account-owner - from github payload
+  //    - template-name - from github payload
+  // - ./remove-from-template-list
+  //    - account-owner - from github payload
+  //    - template-name - from github payload
+  //    - repo-name - from user comment
   public start = async (app: Application): Promise<void> => {
-    // Commands:
-    // - ./add-template - user types "./add-template", then pristine bot adds the template and account owner.
-    //    - account-owner - from github payload
-    //    - template-name - from github payload
-    // - ./add-template-list - from the template repo, comment this command and a list of repos - repo-name-1\n- repo-name-2\n- repo-name-3\n
-    //    - account-owner - from github payload
-    //    - ["repo-name-1", "repo-name-2", "repo-name-3"] - from user comment
-    // - ./add-to-template-list
-    //    - account-owner - from github payload
-    //    - template-name - from github payload
-    //    - repo-name - from user comment
-    // - ./remove-template
-    //    - account-owner - from github payload
-    //    - template-name - from github payload
-    // - ./remove-from-template-list
-    //    - account-owner - from github payload
-    //    - template-name - from github payload
-    //    - repo-name - from user comment
-
-
-    app.on("issue_comment.created", async (context: Context) => {
-      const { payload: { action, title, name, owner } } = context
-
-
-      if(action === "created") {
-        switch (title) {
-          case "add-template":
-            // db.saveTemplate(name, owner, [])
-            break;
-        
-          default:
-            break;
+    app.on(["issues.opened", "issues.reopened"], async (context: Context) => {
+      const { 
+        payload: { 
+          issue,
+          repository: { 
+            owner: { login }, 
+            name
+          }
         } 
+      } = context
+      
+      util.log(`--- EVENT_HAS_BEEN_RECIEVED_COMMAND ---`);
+
+      switch (issue.title.trim()) {
+        case "addTemplate":
+          await this.db.addTemplate(login, name)
+          if(issue.body.length) {
+            await Promise.all(issue.body.split("\r\n").map(async (subscriber: string, index: number) => {
+              console.log("--- subscriber ---", index, subscriber.trim())
+              return await this.db.addSubscriber(login, name, subscriber.trim())
+            }))
+          }
+          // TODO: reply back to their command `
+          // with a comment no their issue.
+        break;
+        case "addSubscriber": 
+          await Promise.all(issue.body.split("\r\n").map(async (subscriber: string) => {
+            return await this.db.addSubscriber(login, name, subscriber.trim())
+          }))
+          // TODO: reply back to their command 
+          // with a comment no their issue.
+        break
+        case "isTemplate":
+          const template = await this.db.getTemplate(login, name)
+          console.log("--- Template ---", template)
+        break
+        default:
+          // TODO: send them a comment message thats say "command not found"
+          break;
       }
     })
+
+    // slashCommands(app, "addSubscriber", async (context: Context, command: any) => {
+    //   const { payload: { repository: { name, owner } } } = context
+    //   const subscribers = command.arguments.split(/\n, */);
+    //   subscribers.forEach(async (subscriber: string) => {
+    //     const newSubscriber = subscriber.substring(2)
+    //     await this.db.addSubscriber(owner, name, newSubscriber)
+    //     // TODO: reply back to their command 
+    //     // with a comment no their issue.
+    //   })
+    // })
 
     app.on("push", async (context: Context) => {
       util.log(`--- EVENT_HAS_BEEN_RECIEVED ---`);
